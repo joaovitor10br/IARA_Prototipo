@@ -44,3 +44,13 @@ fi
 
 #O codigo TERCEIRA agora tera o caminho escolhido pelo usuario
 echo "O usuario escolheu a pasta: $TERCEIRA"
+
+
+#Codigo que chama a tela de escolha de softwares antes do usuario criar a ISO
+python3 /home/joao/TesteBASH/quarta_tela.py
+
+RET=$?
+if [ "$RET" -ne 0 ]; then
+    echo "Usuario cancelou a quarta tela"
+    exit
+fi

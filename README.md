@@ -50,4 +50,5 @@ As contribuições serão muito bem-vindas e de grande ajuda! Abra uma issue ou 
 ##Licença: MIT License
 
 
+<<<<<<< HEAD
 ##Em desenvolvimento
