@@ -1,0 +1,11 @@
+#Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+
+#Arquivos temporarios do sistema
+.DS_Store
+*.swp
+
+#Pastas ou arquivos locais que não quero subir
+*.log
+.env

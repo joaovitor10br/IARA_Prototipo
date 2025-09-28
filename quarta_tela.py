@@ -2,6 +2,7 @@ import sys
 import os
 os.environ["QT_QPA_PLATFORM"] = "xcb" #Esse codigo garante o uso do backend em X11
 import shutil
+import webbrowser
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout,
     QCheckBox, QPushButton, QSpacerItem, QSizePolicy, 
@@ -37,10 +38,10 @@ class QuartaTela(QWidget):
 
         #Esse codigo ira criar uma lista de programas junto com seus respectivos icones
         self.lista_programas = [
-            ("Firefox", "/home/joao/TesteBASH/icons/firefox_icon.png", "/home/joao/minhaISO/iso/firefox_143.0-1_amd64.deb"),
-            ("Steam", "/home/joao/TesteBASH/icons/steam_icon.png", "/home/joao/minhaISO/iso/steam_latest.deb"),
+            ("Firefox", "/home/joao/TesteBASH/icons/firefox_icon.png", "instaladores/firefox"),
+            ("Steam", "/home/joao/TesteBASH/icons/steam_icon.png", "instaladores/steam_latest.deb"),
             ("Spotify", "/home/joao/TesteBASH/icons/spotify_icon.png", None),
-            ("Discord", "/home/joao/TesteBASH/icons/discord_icon.png", None),
+            ("Discord", "/home/joao/TesteBASH/icons/discord_icon.png", "instaladores/discord-0.0.111.deb"),
         ]
 
 
@@ -120,22 +121,26 @@ class QuartaTela(QWidget):
 
     def enviar_selecao(self):
             selecionados = []
-            for checkbox, (nome, icone, deb) in zip(self.checks, self.lista_programas):
-                 if checkbox.isChecked():
+            for checkbox, (nome, __, deb) in zip(self.checks, self.lista_programas):
+                 if checkbox.isChecked() and deb is not None:
                       selecionados.append(deb)
+                 elif nome == "Spotify":
+                      webbrowser.open("https://www.spotify.com/br-pt/download/linux/")
             
             if not selecionados:
                  QMessageBox.warning(self, "Atenção!", "Selecione pelo menos um programa!")
                  return
             
-            #Esse codigo vai mandar todos os arquivos .deb para a pasta escolhida pelo usuario
-            selecionados_completo = []
-            for deb in selecionados:
-                 destino = os.path.join(self.pasta_terceira, os.path.basename(deb))
-                 shutil.copy(deb, destino) #Esse codigo copia os arquivos para a pasta escolhida
-                 selecionados_completo.append(destino)
+            #Esse codigo copia arquivos para a pasta escolhida pelo usuario
+            copiados = []
+            for arquivo in selecionados:
+                 arquivos_abs = os.path.join(os.path.dirname(__file__), arquivo)
+                 destino = os.path.join(self.pasta_terceira, os.path.basename(arquivos_abs))
+                 os.makedirs(os.path.dirname(destino), exist_ok=True)
+                 shutil.copy2(arquivos_abs, destino)
+                 copiados.append(destino)
 
-            print(" ".join(selecionados_completo))
+            print("Arquivos copiados: ", copiados)
             #Esse comando ira imprimir os pacotes selecionados para o bash
             self.ret = 1
             self.close()
