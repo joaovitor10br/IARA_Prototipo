@@ -24,12 +24,12 @@ fi
 #Essa parte verifica se o programa está instalado
 if ! command -v $SOFTWARE &>/dev/null; then
     dialog --infobox "Instalando $SOFTWARE..." 5 50
-    sudo apt update
+    sudo apt update -y
     sudo apt install $SOFTWARE -y
 fi
 
 #Essa parte irá abrir o software após ele ter sido instalado
-dialog --infobox "Abrindo $SOFTWARE..." 5 50
+#dialog --infobox "Abrindo $SOFTWARE..." 5 50
 $SOFTWARE
 
 
@@ -46,11 +46,33 @@ fi
 echo "O usuario escolheu a pasta: $TERCEIRA"
 
 
-#Codigo que chama a tela de escolha de softwares antes do usuario criar a ISO
-python3 /home/joao/TesteBASH/quarta_tela.py
+#Codigo que executa a quarta tela, onde o usuario pode escolher os softwares para deixar pre instalado e pega os pacotes selecionados
+SELECIONADOS=$(python3 /home/joao/TesteBASH/quarta_tela.py)
 
-RET=$?
-if [ "$RET" -ne 0 ]; then
-    echo "Usuario cancelou a quarta tela"
+if [ -z "$SELECIONADOS" ]; then
+    echo "Usuário não selecionou nada ou cancelou a ação"
     exit
 fi
+
+echo "Usuário escolheu: $SELECIONADOS"
+
+#Esse codigo cria a pasta de destino, caso nao exista
+mkdir -p /home/joao/iso_build/custom/packages/
+
+#Esse codigo copia os arquivos .deb para a pasta da ISO
+for prog in $SELECIONADOS; do
+    cp "$prog" /home/joao/iso_build/custom/packages/
+done
+
+#Esse codigo permite que o usuario escolha onde quer salvar seus arquivos .deb
+DESTINO=$(python3 /home/joao/TesteBASH/escolher_pasta.py)
+
+if [ -z "$DESTINO" ]; then
+    echo "Usuário cancelou ou não escolheu a pasta"
+    exit
+fi
+
+#Esse comando ira copiar os pacotes selecionados
+for prog in $SELECIONADOS; do
+    cp "$prog" "$DESTINO"
+done

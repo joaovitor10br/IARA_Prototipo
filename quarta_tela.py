@@ -1,20 +1,25 @@
 import sys
 import os
 os.environ["QT_QPA_PLATFORM"] = "xcb" #Esse codigo garante o uso do backend em X11
+import shutil
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout,
     QCheckBox, QPushButton, QSpacerItem, QSizePolicy, 
-    QMessageBox, QDialog, QGridLayout
+    QMessageBox, QDialog, QGridLayout, QFileDialog
 )
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import Qt, QSize
 
 class QuartaTela(QWidget):
 
-    def __init__(self):
+    def __init__(self, pasta_escolhida):
         super().__init__()
 
+        if not pasta_escolhida:
+             raise ValueError("A pasta escolhida precisa ser passada pela terceira tela")
+        self.pasta_terceira = pasta_escolhida
         self.ret = 0
+
         self.setWindowTitle("Escolha de programas")
         self.setStyleSheet("background-color: black; color: white;")
         self.resize(400, 300)
@@ -31,18 +36,19 @@ class QuartaTela(QWidget):
         layout_principal.addSpacing(20)
 
         #Esse codigo ira criar uma lista de programas junto com seus respectivos icones
-        lista_programas = [
-            ("Firefox", "/home/joao/TesteBASH/icons/firefox_icon.png"),
-            ("Steam", "/home/joao/TesteBASH/icons/steam_icon.png"),
-            ("Spotify", "/home/joao/TesteBASH/icons/spotify_icon.png"),
-            ("Discord", "/home/joao/TesteBASH/icons/discord_icon.png"),
+        self.lista_programas = [
+            ("Firefox", "/home/joao/TesteBASH/icons/firefox_icon.png", "/home/joao/minhaISO/iso/firefox_143.0-1_amd64.deb"),
+            ("Steam", "/home/joao/TesteBASH/icons/steam_icon.png", "/home/joao/minhaISO/iso/steam_latest.deb"),
+            ("Spotify", "/home/joao/TesteBASH/icons/spotify_icon.png", None),
+            ("Discord", "/home/joao/TesteBASH/icons/discord_icon.png", None),
         ]
+
 
         self.checks = [] #Essa parte do codigo ira criar as checkbox
         layout_programas = QGridLayout()
         layout_programas.setAlignment(Qt.AlignHCenter)
 
-        for i, (nome, icone) in enumerate(lista_programas):
+        for i, (nome, icone, deb) in enumerate(self.lista_programas):
             
             checkbox = QCheckBox()
             self.checks.append(checkbox)
@@ -97,7 +103,7 @@ class QuartaTela(QWidget):
             }
         """)
 
-        botao_proximo.clicked.connect(lambda: self.close_with_value(1))
+        botao_proximo.clicked.connect(lambda: self.enviar_selecao())
 
         layout_botao = QHBoxLayout()
         layout_botao.addStretch()
@@ -112,6 +118,28 @@ class QuartaTela(QWidget):
         self.ret = value
         self.close() #Esse codigo vai fechar a janela normalmente
 
+    def enviar_selecao(self):
+            selecionados = []
+            for checkbox, (nome, icone, deb) in zip(self.checks, self.lista_programas):
+                 if checkbox.isChecked():
+                      selecionados.append(deb)
+            
+            if not selecionados:
+                 QMessageBox.warning(self, "Atenção!", "Selecione pelo menos um programa!")
+                 return
+            
+            #Esse codigo vai mandar todos os arquivos .deb para a pasta escolhida pelo usuario
+            selecionados_completo = []
+            for deb in selecionados:
+                 destino = os.path.join(self.pasta_terceira, os.path.basename(deb))
+                 shutil.copy(deb, destino) #Esse codigo copia os arquivos para a pasta escolhida
+                 selecionados_completo.append(destino)
+
+            print(" ".join(selecionados_completo))
+            #Esse comando ira imprimir os pacotes selecionados para o bash
+            self.ret = 1
+            self.close()
+
     def closeEvent(self, event):
         #Cria a tela de mensagem perguntando se o usuario quer realmente fechar o programa
             if self.ret == 0:
@@ -125,6 +153,12 @@ class QuartaTela(QWidget):
             else:
                 event.accept()
 
+def iniciar_tela(parent = None, pasta_escolhida=None):
+    janela = QuartaTela(pasta_escolhida)
+    if parent:
+         janela.setParent(parent)
+    janela.show()
+    return janela
 
 #Essa classe ira fechar a tela
 class FecharTela(QDialog):
@@ -178,17 +212,5 @@ class FecharTela(QDialog):
 
         self.setLayout(layout)
 
-
-
-class iniciar_tela():
-    def __init__(self):
-        app = QApplication(sys.argv)
-        janela = QuartaTela()
-        janela.show()
-        app.exec()
-        #Esse comando retorna o valor para o bash
-        sys.exit(janela.ret)
-
 if __name__ == "__main__":
-    iniciar_tela()
-
+     iniciar_tela()

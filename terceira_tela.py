@@ -1,14 +1,21 @@
 import sys
-import subprocess
-from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QPushButton, QMessageBox, QHBoxLayout, QFileDialog
-from PyQt5.QtGui import QIcon, QFont
+import os
+os.environ["QT_QPA_PLATFORM"] = "xcb" #Esse codigo garante o uso do backend em X11
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout,
+    QCheckBox, QPushButton, QSpacerItem, QSizePolicy, 
+    QMessageBox, QDialog, QGridLayout, QFileDialog
+)
+from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import Qt, QSize
+from quarta_tela import iniciar_tela
 
 class TerceiraTela(QDialog):
 
     def __init__(self):
 
         self.ret = 0
+        self.pasta = None
 
         super().__init__()
         self.setWindowTitle("Projeto X - Escolha a sua pasta")
@@ -53,18 +60,11 @@ class TerceiraTela(QDialog):
 
         self.setLayout(layout)
 
-    def abrir_explorador(self): #Esta funcao abre o explorador de arquivos do sistema do usuario e permite que ele crie e salve a pasta onde vai ficar a ISO
-            dialogo = QFileDialog(
-                 None, 
-                 "Salvar ISO", 
-                 "/home"
-            )
-            dialogo.setAcceptMode(QFileDialog.AcceptSave) #Esse codigo muda para 'Salvar'
-            dialogo.setNameFilter("Arquivo ISO (*iso);;Todos os arquivos (*)")
-
-            if dialogo.exec():
-                 arquivo = dialogo.selectedFiles()[0]
-                 print("O usuário escolheu salvar a ISO em: ", arquivo) #Esse codigo indica em que pasta o usuario decidiu salvar a ISO
+    def abrir_explorador(self):
+         dialog = QFileDialog(self, "Escolha a pasta", os.path.expanduser("~")) #Esse comando ira iniciar a pasta no diretorio home do usuario
+         dialog.setOption(QFileDialog.ShowDirsOnly, True)
+         dialog.setStyleSheet("") #Esse comando ira garantir que o explorador use o estilo padrao do sistema
+         self.pasta = QFileDialog.getExistingDirectory()
 
     def closeEvent(self, event):
             #Cria a tela de mensagem perguntando se o usuario quer realmente fechar o programa
@@ -78,6 +78,12 @@ class TerceiraTela(QDialog):
                     event.ignore()
             else:
                 event.accept()
+    
+class EscolhaPasta(QWidget):
+     def __init__(self):
+          super().__init__()
+          self.setWindowTitle("Escolha a pasta onde quer salvar os seus arquivos .deb")
+          self.pasta = ""
 
 #Essa classe ira fechar a tela
 class FecharTela(QDialog):
@@ -131,10 +137,14 @@ class FecharTela(QDialog):
 
         self.setLayout(layout)
 
-def iniciar_tela():
-    app = QApplication(sys.argv)
-    janela = TerceiraTela()
-    janela.exec()
+
 
 if __name__ == "__main__":
-    iniciar_tela()
+     
+     app = QApplication([])
+     tela = TerceiraTela()
+     if tela.exec() == QDialog.Accepted:
+          if tela.pasta:
+               print("Pasta escolhida: ", tela.pasta)
+               quarta = iniciar_tela(pasta_escolhida=tela.pasta) #Codigo que passa a pasta real para a quarta tela
+     sys.exit(app.exec())
