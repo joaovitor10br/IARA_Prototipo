@@ -1,23 +1,22 @@
 import sys
 import os
-os.environ["QT_QPA_PLATFORM"] = "xcb" #Esse codigo garante o uso do backend em X11
+os.environ["QT_QPA_PLATFORM"] = "xcb"
 import shutil
 import webbrowser
+import requests
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout,
-    QCheckBox, QPushButton, QSpacerItem, QSizePolicy, 
-    QMessageBox, QDialog, QGridLayout, QFileDialog
+    QCheckBox, QPushButton, QMessageBox, QDialog, QGridLayout
 )
-from PyQt5.QtGui import QIcon, QPixmap, QFont
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtCore import Qt
 
 class QuartaTela(QWidget):
-
     def __init__(self, pasta_escolhida):
         super().__init__()
 
         if not pasta_escolhida:
-             raise ValueError("A pasta escolhida precisa ser passada pela terceira tela")
+            raise ValueError("A pasta escolhida precisa ser passada pela terceira tela")
         self.pasta_terceira = pasta_escolhida
         self.ret = 0
 
@@ -28,15 +27,21 @@ class QuartaTela(QWidget):
         layout_principal = QVBoxLayout()
         layout_principal.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
 
-        #Esse codigo cria o titulo da tela
         titulo = QLabel("Escolha quais programas você gostaria de deixar pré-instalado")
         titulo.setFont(QFont("Arial", 12))
-        titulo.setStyleSheet("color: white;")
         titulo.setAlignment(Qt.AlignCenter)
         layout_principal.addWidget(titulo)
         layout_principal.addSpacing(20)
 
-        #Esse codigo ira criar uma lista de programas junto com seus respectivos icones
+        # 🔗 Links diretos para download
+        self.links_download = {
+            "Firefox": "https://ftp.mozilla.org/pub/firefox/releases/143.0/linux-x86_64/en-US/firefox-143.0.tar.bz2",
+            "Steam": "https://cdn.akamai.steamstatic.com/client/installer/steam.deb",
+            "Discord": "https://dl.discordapp.net/apps/linux/0.0.111/discord-0.0.111.deb",
+            "Spotify": "https://repository.spotify.com/pool/non-free/s/spotify-client/spotify-client_1.2.41.420.g206397e5-434_amd64.deb"
+        }
+
+        # Lista de programas
         self.lista_programas = [
             ("Firefox", "/home/joao/TesteBASH/icons/firefox_icon.png", "instaladores/firefox"),
             ("Steam", "/home/joao/TesteBASH/icons/steam_icon.png", "instaladores/steam_latest.deb"),
@@ -44,32 +49,24 @@ class QuartaTela(QWidget):
             ("Discord", "/home/joao/TesteBASH/icons/discord_icon.png", "instaladores/discord-0.0.111.deb"),
         ]
 
-
-        self.checks = [] #Essa parte do codigo ira criar as checkbox
+        self.checks = []
         layout_programas = QGridLayout()
         layout_programas.setAlignment(Qt.AlignHCenter)
 
         for i, (nome, icone, deb) in enumerate(self.lista_programas):
-            
             checkbox = QCheckBox()
             self.checks.append(checkbox)
-            checkbox.setStyleSheet(
-            """
-            QCheckBox {
-                color: white;
-            }
-            QCheckBox::indicator {
-                width: 18px;
-                height: 18px;
-                border: 2px solid white;
-                border-radius: 3px;
-                background-color: black;
-            }
-            QCheckBox::indicator:checked {
-                background-color: #3498db;
-            }
-            """
-            )
+            checkbox.setStyleSheet("""
+                QCheckBox { color: white; }
+                QCheckBox::indicator {
+                    width: 18px; height: 18px;
+                    border: 2px solid white; border-radius: 3px;
+                    background-color: black;
+                }
+                QCheckBox::indicator:checked {
+                    background-color: #3498db;
+                }
+            """)
 
             label_icon = QLabel()
             pixmap = QPixmap(icone).scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -86,11 +83,8 @@ class QuartaTela(QWidget):
         layout_principal.addLayout(layout_programas)
         layout_principal.addSpacing(30)
 
-        #Esse codigo coloca o botao azul centralizado
-        
         botao_proximo = QPushButton("→")
-        botao_proximo.setStyleSheet(
-            """
+        botao_proximo.setStyleSheet("""
             QPushButton {
                 background-color: #0078D7;
                 border-radius: 8px;
@@ -99,11 +93,8 @@ class QuartaTela(QWidget):
                 font-weight: bold;
                 padding: 8 16px;
             }
-            QPushButton: hover {
-                background-color: #005A9E;
-            }
+            QPushButton:hover { background-color: #005A9E; }
         """)
-
         botao_proximo.clicked.connect(lambda: self.enviar_selecao())
 
         layout_botao = QHBoxLayout()
@@ -111,102 +102,107 @@ class QuartaTela(QWidget):
         layout_botao.addWidget(botao_proximo)
         layout_botao.addStretch()
         layout_principal.addLayout(layout_botao)
-
         layout_principal.addStretch()
         self.setLayout(layout_principal)
 
-    def close_with_value(self, value):
-        self.ret = value
-        self.close() #Esse codigo vai fechar a janela normalmente
+    # Função que será para baixar programas automaticamente
+    def baixar_programa(self, nome):
+        url = self.links_download.get(nome)
+        if not url:
+            QMessageBox.warning(self, "Erro", f"Nenhum link configurado para {nome}.")
+            return None
+
+        nome_arquivo = os.path.basename(url)
+        caminho_completo = os.path.join(self.pasta_terceira, nome_arquivo)
+
+        try:
+            resposta = requests.get(url, stream=True, timeout=30)
+            resposta.raise_for_status()
+
+            with open(caminho_completo, "wb") as f:
+                for chunk in resposta.iter_content(1024):
+                    f.write(chunk)
+
+            print(f"{nome} salvo em {caminho_completo}")
+            return caminho_completo
+
+        except Exception as e:
+            QMessageBox.warning(self, "Erro de download", f"Falha ao baixar {nome}: {e}")
+            return None
 
     def enviar_selecao(self):
-            selecionados = []
-            for checkbox, (nome, __, deb) in zip(self.checks, self.lista_programas):
-                 if checkbox.isChecked() and deb is not None:
-                      selecionados.append(deb)
-                 elif nome == "Spotify":
-                      webbrowser.open("https://www.spotify.com/br-pt/download/linux/")
-            
-            if not selecionados:
-                 QMessageBox.warning(self, "Atenção!", "Selecione pelo menos um programa!")
-                 return
-            
-            #Esse codigo copia arquivos para a pasta escolhida pelo usuario
-            copiados = []
-            for arquivo in selecionados:
-                 arquivos_abs = os.path.join(os.path.dirname(__file__), arquivo)
-                 destino = os.path.join(self.pasta_terceira, os.path.basename(arquivos_abs))
-                 os.makedirs(os.path.dirname(destino), exist_ok=True)
-                 shutil.copy2(arquivos_abs, destino)
-                 copiados.append(destino)
+        selecionados = []
 
-            print("Arquivos copiados: ", copiados)
-            #Esse comando ira imprimir os pacotes selecionados para o bash
-            self.ret = 1
-            self.close()
+        for checkbox, (nome, __, deb) in zip(self.checks, self.lista_programas):
+            if checkbox.isChecked():
+                if deb is not None and os.path.exists(os.path.join(os.path.dirname(__file__), deb)):
+                    # copia local
+                    arquivos_abs = os.path.join(os.path.dirname(__file__), deb)
+                    destino = os.path.join(self.pasta_terceira, os.path.basename(arquivos_abs))
+                    shutil.copy2(arquivos_abs, destino)
+                    selecionados.append(destino)
+                else:
+                    # tenta baixar o programa
+                    caminho_baixado = self.baixar_programa(nome)
+                    if caminho_baixado:
+                        selecionados.append(caminho_baixado)
+
+        if not selecionados:
+            QMessageBox.warning(self, "Atenção!", "Selecione pelo menos um programa!")
+            return
+
+        print("Arquivos preparados:", selecionados)
+        self.ret = 1
+        self.close()
 
     def closeEvent(self, event):
-        #Cria a tela de mensagem perguntando se o usuario quer realmente fechar o programa
-            if self.ret == 0:
-                tela = FecharTela()
-                resposta = tela.exec()
-
-                if resposta == QMessageBox.Yes:
-                    event.accept()
-                else:
-                    event.ignore()
-            else:
+        if self.ret == 0:
+            tela = FecharTela()
+            resposta = tela.exec()
+            if resposta == QMessageBox.Yes:
                 event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()
 
-def iniciar_tela(parent = None, pasta_escolhida=None):
+def iniciar_tela(parent=None, pasta_escolhida=None):
     janela = QuartaTela(pasta_escolhida)
     if parent:
-         janela.setParent(parent)
+        janela.setParent(parent)
     janela.show()
     return janela
 
-#Essa classe ira fechar a tela
 class FecharTela(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Fechar o programa")
         self.setFixedSize(300, 150)
         self.setStyleSheet("background-color: black; color: white;")
-        
-        layout = QVBoxLayout()
 
-        #Cria o texto de confirmacao
+        layout = QVBoxLayout()
         mensagem = QLabel("Você quer mesmo fechar o programa?")
         mensagem.setFont(QFont("Arial", 12))
         mensagem.setAlignment(Qt.AlignCenter)
-        layout.addWidget(mensagem) #Essa parte do código adiciona a mensagem
+        layout.addWidget(mensagem)
 
-        #Cria os botoes
         botoes_layout = QHBoxLayout()
         botao_sim = QPushButton("Sim")
         botao_nao = QPushButton("Não")
 
         botao_sim.setStyleSheet("""
             QPushButton {
-                background-color: #3498db;
-                color: white;
-                padding: 6px 12px;
-                border-radius: 6px;
+                background-color: #3498db; color: white;
+                padding: 6px 12px; border-radius: 6px;
             }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+            QPushButton:hover { background-color: #2980b9; }
         """)
         botao_nao.setStyleSheet("""
             QPushButton {
-                background-color: #aaa;
-                color: black;
-                padding: 6px 12px;
-                border-radius: 6px;
+                background-color: #aaa; color: black;
+                padding: 6px 12px; border-radius: 6px;
             }
-            QPushButton:hover {
-                background-color: #888;
-            }
+            QPushButton:hover { background-color: #888; }
         """)
         botao_sim.clicked.connect(lambda: self.done(QMessageBox.Yes))
         botao_nao.clicked.connect(lambda: self.done(QMessageBox.No))
@@ -214,8 +210,7 @@ class FecharTela(QDialog):
         botoes_layout.addWidget(botao_sim)
         botoes_layout.addWidget(botao_nao)
         layout.addLayout(botoes_layout)
-
         self.setLayout(layout)
 
 if __name__ == "__main__":
-     iniciar_tela()
+    iniciar_tela()

@@ -23,14 +23,14 @@ fi
 
 #Essa parte verifica se o programa está instalado
 if ! command -v $SOFTWARE &>/dev/null; then
-    dialog --infobox "Instalando $SOFTWARE..." 5 50
+    #dialog --infobox "Instalando $SOFTWARE..." 5 50
     sudo apt update -y
     sudo apt install $SOFTWARE -y
 fi
 
 #Essa parte irá abrir o software após ele ter sido instalado
 #dialog --infobox "Abrindo $SOFTWARE..." 5 50
-$SOFTWARE
+#$SOFTWARE
 
 
 #Essa função cria uma terceira tela, onde nela o usuário poderá escolher quais softwares deseja manter na ISO

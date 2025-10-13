@@ -1,4 +1,5 @@
 import sys
+import subprocess
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QMessageBox, QDialog
 from PyQt5.QtGui import QIcon, QFont, QPalette, QColor
 from PyQt5.QtCore import QSize, Qt
@@ -82,8 +83,28 @@ class SegundaTela(QDialog):
         vbox.setSpacing(30)
 
     def selecionar(self, codigo):
+        # Essa linha evita reabrir o programa caso o usuario ja tenha clicado uma vez
+        if self.selecionado == codigo:
+            return
+        
         self.selecionado = codigo
-        self.accept() #Esta parte da funcao fecha o qdialog e retorna o resultado
+
+        #Cria um dicionario com os comandos de cada opcao
+        comandos = {
+            10: ["deja-dup"],
+            20: ["timeshift"],
+            30: ["rclone"]
+        }
+
+        if codigo in comandos:
+            try:
+                subprocess.Popen(comandos[codigo]) #Esta linha abre o programa sem encerrar a GUI
+            except FileNotFoundError:
+                aviso = TelaAviso(f"O programa selecionado não está instalado no sistema.")
+                aviso.exec()
+            except Exception as e:
+                aviso = TelaAviso(f"Erro ao abrir o programa {e}")
+                aviso.exec()
 
     def avancar(self):
             if self.selecionado == 0:
