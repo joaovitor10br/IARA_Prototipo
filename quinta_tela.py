@@ -78,7 +78,7 @@ class QuintaTela(QWidget):
 
     def baixar_iso(self):
         if self.opcao1.isChecked():
-            url = "https://releases.ubuntu.com/24.04/ubuntu-24.04-desktop-amd64.iso"
+            url = "https://ubuntu.c3sl.ufpr.br/releases/22.04/ubuntu-22.04.5-desktop-amd64.iso"
             nome = "ubuntu_24_04.iso"
         elif self.opcao2.isChecked():
             url = "https://releases.ubuntu.com/22.04/ubuntu-22.04.5-desktop-amd64.iso"
@@ -87,7 +87,7 @@ class QuintaTela(QWidget):
             url = "https://mirror.csclub.uwaterloo.ca/linuxmint/stable/22/linuxmint-22-cinnamon-64bit.iso"
             nome = "linuxmint_22.iso"
         elif self.opcao4.isChecked():
-            url = "https://mirror.math.princeton.edu/pub/zorin/17/Zorin-OS-17-Core-64-bit.iso"
+            url = "https://mirror.umd.edu/zorin/17/Zorin-OS-17.3-Core-64-bit-r2.iso"
             nome = "zorin_17.iso"
         else:
             QMessageBox.warning(self, "Aviso", "Selecione uma distribuição antes de avançar.")
