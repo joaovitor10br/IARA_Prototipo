@@ -76,3 +76,12 @@ fi
 for prog in $SELECIONADOS; do
     cp "$prog" "$DESTINO"
 done
+
+#Esse codigo chama a quinta_tela_principal.py
+python3 /home/joao/TesteBASH/quinta_tela_principal.py
+RET=$?
+
+if [ "$RET" -ne 0 ]; then
+    echo "Usuário cancelou a escolha da distribuição"
+    exit
+fi

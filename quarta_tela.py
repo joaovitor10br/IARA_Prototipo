@@ -167,6 +167,7 @@ class QuartaTela(QWidget):
             event.accept()
 
 def iniciar_tela(parent=None, pasta_escolhida=None):
+    app = QApplication.instance() or QApplication(sys.argv)
     janela = QuartaTela(pasta_escolhida)
     if parent:
         janela.setParent(parent)
@@ -213,4 +214,4 @@ class FecharTela(QDialog):
         self.setLayout(layout)
 
 if __name__ == "__main__":
-    iniciar_tela()
+    iniciar_tela(pasta_escolhida="/home/joao/Teste")
