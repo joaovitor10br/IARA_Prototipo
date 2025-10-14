@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout,
     QPushButton, QMessageBox, QDialog, QFileDialog
 )
-from PyQt5.QtGui import QIcon, QFont, QPalette, QColor
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 from quarta_tela import iniciar_tela
 
@@ -55,11 +55,9 @@ class TerceiraTela(QDialog):
         self.setLayout(layout)
 
     def abrir_explorador(self):
-        # Remove temporariamente o estilo escuro pra não afetar o explorador
         estilo_antigo = self.styleSheet()
         self.setStyleSheet("")
 
-        # Abre o explorador de arquivos nativo
         caminho = QFileDialog.getExistingDirectory(
             self,
             "Escolha a pasta onde deseja salvar",
@@ -67,48 +65,88 @@ class TerceiraTela(QDialog):
             QFileDialog.ShowDirsOnly
         )
 
-        # Restaura o estilo original da janela principal
         self.setStyleSheet(estilo_antigo)
 
         if caminho:
             os.makedirs(caminho, exist_ok=True)
             self.pasta = caminho
 
-            # Cria manualmente o QMessageBox com estilo 100% visível
-            msg = QMessageBox(self)
-            msg.setWindowTitle("Pasta selecionada")
-            msg.setText(f"Pasta escolhida:\n{caminho}")
-            msg.setIcon(QMessageBox.Information)
-            msg.setStandardButtons(QMessageBox.Ok)
+            # ===== Popup 100% customizado =====
+            popup = QDialog(self)
+            popup.setWindowTitle("Pasta selecionada")
+            popup.setFixedSize(420, 180)
+            popup.setStyleSheet("""
+                QDialog {
+                    background-color: #ffffff;
+                    border: 2px solid #333333;
+                }
+                QLabel {
+                    background-color: #ffffff;
+                    color: #000000;
+                    font-size: 14px;
+                    font-family: Arial;
+                }
+                QPushButton {
+                    background-color: #ffffff;
+                    color: #000000;
+                    padding: 6px 14px;
+                    border: 1px solid #000000;
+                    border-radius: 6px;
+                }
+                QPushButton:hover {
+                    background-color: #e0e0e0;
+                }
+            """)
 
-            # Aplica estilo explícito — fundo claro, texto preto, botão azul
-            msg.setStyleSheet("""
+            layout = QVBoxLayout(popup)
+
+            texto = QLabel(f"Pasta escolhida:\n{caminho}")
+            texto.setAlignment(Qt.AlignCenter)
+            texto.setStyleSheet("background-color: #ffffff; color: #000000;")
+            layout.addWidget(texto)
+
+            botao = QPushButton("OK")
+            botao.setFixedWidth(80)
+            botao.setStyleSheet("""
+                background-color: #ffffff;
+                color: #000000;
+                border: 1px solid #000000;
+                border-radius: 4px;
+            """)
+            botao.clicked.connect(popup.accept)
+            layout.addWidget(botao, alignment=Qt.AlignCenter)
+
+            popup.exec_()
+
+
+
+    def confirmar(self):
+        if not self.pasta:
+            aviso = QMessageBox(self)
+            aviso.setWindowTitle("Atenção")
+            aviso.setText("Por favor, escolha uma pasta antes de continuar.")
+            aviso.setIcon(QMessageBox.NoIcon)
+            aviso.setStandardButtons(QMessageBox.Ok)
+            aviso.setStyleSheet("""
                 QMessageBox {
                     background-color: white;
                     color: black;
                     font-size: 13px;
                     font-family: Arial;
                 }
-                QLabel {
-                    color: white;
-                }
+                QLabel { color: black; }
                 QPushButton {
                     background-color: white;
                     color: black;
                     padding: 6px 14px;
+                    border: 1px solid #555;
                     border-radius: 6px;
                 }
-                QPushButton:hover {
-                    background-color: #005fa3;
-                }
+                QPushButton:hover { background-color: #ddd; }
             """)
-            msg.exec_()
-
-
-    def confirmar(self):
-        if not self.pasta:
-            QMessageBox.warning(self, "Atenção", "Por favor, escolha uma pasta antes de continuar.")
+            aviso.exec_()
             return
+
         self.ret = 1
         self.accept()  # Fecha a tela e marca como aceita
 
