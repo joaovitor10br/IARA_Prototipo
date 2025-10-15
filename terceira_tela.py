@@ -29,7 +29,7 @@ class TerceiraTela(QDialog):
 
         # botão da pasta
         btn_pasta = QPushButton()
-        btn_pasta.setIcon(QIcon("/home/joao/TesteBASH/icons/pasta.png"))
+        btn_pasta.setIcon(QIcon("/home/joao/IARA/icons/pasta.png"))
         btn_pasta.setIconSize(QSize(128, 128))
         btn_pasta.setFixedSize(140, 140)
         btn_pasta.setStyleSheet("background-color: transparent; border: none;")

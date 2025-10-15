@@ -47,15 +47,15 @@ class SegundaTela(QDialog):
 
         #Este comando cria os botões
         btn_deja = QPushButton()
-        btn_deja.setIcon(QIcon("/home/joao/TesteBASH/icons/deja_dup.png"))
+        btn_deja.setIcon(QIcon("/home/joao/IARA/icons/deja_dup.png"))
         btn_deja.setIconSize(QSize(64, 64))
         btn_deja.clicked.connect(lambda: self.selecionar(10)) #Código de saída 10
         btn_time = QPushButton()
-        btn_time.setIcon(QIcon("/home/joao/TesteBASH/icons/timeshift.png"))
+        btn_time.setIcon(QIcon("/home/joao/IARA/icons/timeshift.png"))
         btn_time.setIconSize(QSize(64, 64))
         btn_time.clicked.connect(lambda: self.selecionar(20)) #Código de saída 20
         btn_rclone = QPushButton()
-        btn_rclone.setIcon(QIcon("/home/joao/TesteBASH/icons/rclone.png"))
+        btn_rclone.setIcon(QIcon("/home/joao/IARA/icons/rclone.png"))
         btn_rclone.setIconSize(QSize(64, 64))
         btn_rclone.clicked.connect(lambda: self.selecionar(30)) #Código de saída 30
 

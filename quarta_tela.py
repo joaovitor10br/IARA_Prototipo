@@ -43,10 +43,10 @@ class QuartaTela(QWidget):
 
         # Lista de programas
         self.lista_programas = [
-            ("Firefox", "/home/joao/TesteBASH/icons/firefox_icon.png", "instaladores/firefox"),
-            ("Steam", "/home/joao/TesteBASH/icons/steam_icon.png", "instaladores/steam_latest.deb"),
-            ("Spotify", "/home/joao/TesteBASH/icons/spotify_icon.png", None),
-            ("Discord", "/home/joao/TesteBASH/icons/discord_icon.png", "instaladores/discord-0.0.111.deb"),
+            ("Firefox", "/home/joao/IARA/icons/firefox_icon.png", "instaladores/firefox"),
+            ("Steam", "/home/joao/IARA/icons/steam_icon.png", "instaladores/steam_latest.deb"),
+            ("Spotify", "/home/joao/IARA/icons/spotify_icon.png", None),
+            ("Discord", "/home/joao/IARA/icons/discord_icon.png", "instaladores/discord-0.0.111.deb"),
         ]
 
         self.checks = []
