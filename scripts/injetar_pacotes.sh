@@ -14,21 +14,35 @@ if [ ! -f "$ISO_BASE" ]; then
     exit 1
 fi
 
-# Esse codigo ira montar e extrair a ISO base
+# Monta e extrai a ISO base
 mkdir -p "$ISO_DIR"
-bsdtar -xpf "$ISO_BASE" -C "$ISO_DIR"
+sudo bsdtar -xpf "$ISO_BASE" -C "$ISO_DIR"
 
-# Esse codigo vai copiar os pacotes para o diretorio apropriado
+# Copia os pacotes para o diretório apropriado
 mkdir -p "$ISO_DIR/pool/custom"
 for p in "${PACOTES[@]}"; do
     cp "$p" "$ISO_DIR/pool/custom/"
 done
 
-#Esse codigo vai atualizar a lista de pacotes
-sudo chroot "$ISO_DIR" dpkg-scanpackages /pool/custom /dev/null | gzip -9c > "$ISO_DIR/dists/stable/main/binary-amd64/Packages.gz"
+# Atualiza a lista de pacotes (host, não chroot)
+dpkg-scanpackages "$ISO_DIR/pool/custom" /dev/null | gzip -9c > "$ISO_DIR/dists/stable/main/binary-amd64/Packages.gz"
 
-#Esse codigo vai recriar a ISO
-genisoimage -r -V "Custom Ubuntu" -cache-inodes -J -l \
-    -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot \
-    -boot-load-size 4 -boot-info-table -o "$ISO_FINAL" "$ISO_DIR"
+# Recria a ISO com xorriso (UEFI + BIOS)
+sudo xorriso -as mkisofs \
+  -r -V "Ubuntu_Custom" \
+  -o "$ISO_FINAL" \
+  -J -joliet-long \
+  -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+  -c boot.catalog \
+  -b boot/grub/i386-pc/eltorito.img \
+  -no-emul-boot \
+  -boot-load-size 4 \
+  -boot-info-table \
+  -eltorito-alt-boot \
+  -e EFI/boot/bootx64.efi \
+  -no-emul-boot \
+  -isohybrid-gpt-basdat \
+  "$ISO_DIR"
+
+
 echo "ISO personalizada criada em $ISO_FINAL"
