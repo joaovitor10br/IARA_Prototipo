@@ -155,6 +155,13 @@ class QuartaTela(QWidget):
         self.ret = 1
         self.close()
 
+        import json
+        json_path = os.path.join(self.pasta_terceira, "programas_selecionados.json")
+        with open(json_path, "w") as f:
+            json.dump(selecionados, f)
+        print(f"Seleção salva em {json_path}")
+        
+
     def closeEvent(self, event):
         if self.ret == 0:
             tela = FecharTela()

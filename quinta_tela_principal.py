@@ -1,4 +1,7 @@
 import sys
+import subprocess
+import os
+import json
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel,
     QHBoxLayout, QPushButton, QMessageBox
@@ -43,11 +46,34 @@ class QuintaTelaPrincipal(QWidget):
         layout.addLayout(icones_layout)
         self.setLayout(layout)
 
+    
     #Essa funcao vai abrir a lista de distros baseadas no ubuntu
     def abrir_ubuntu(self, event):
         self.hide() #Esse comando esconde a tela principal
         self.ubuntu_window = QuintaTela()
         self.ubuntu_window.show()
+
+        pasta_base = os.path.expanduser("~")
+        json_path = os.path.join(pasta_base, "Teste", "programas_selecionados.json")
+        if not os.path.exists(json_path):
+            QMessageBox.critical(self, "Erro", f"O arquivo {json_path} não foi encontrado.")
+            return
+        with open(json_path) as f:
+            pacotes = json.load(f)
+
+        #Chama o script bash que injeta os pacotes
+        script_path = os.path.join(os.path.dirname(__file__), "scripts", "injetar_pacotes.sh")
+        if not os.path.exists(script_path):
+            QMessageBox.critical(self, "Erro", f"O script {script_path} não foi encontrado.")
+            return
+        comando = ["bash", script_path] + pacotes
+
+        try:
+            subprocess.run(comando, check=True)
+            QMessageBox.information(self, "Sucesso", "Pacotes injetados com sucesso")
+        except subprocess.CalledProcessError as e:
+            QMessageBox.critical(self, "Erro", f"Falha ao injetar pacotes: {e}")
+
 
     #Essa funcao vai abrir a lista de distros baseadas no arch (em andamento)
     def abrir_arch(self, event):
