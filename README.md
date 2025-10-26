@@ -1,9 +1,9 @@
 
-#Projeto IARA (Nome provisório) - Criador de ISOs personalizáveis
+#Projeto IARA (Protótipo) - Criador de ISOs personalizáveis
 
-> ⚠️ **Atenção** A geração automática da ISO ainda **não está implementada** Projeto está em desenvolvimento. Veja a seção **Status do projeto**.
+> ⚠️ **Atenção** este repositório abriga apenas a versão protótipa do projeto, feita em Python e PyQt5 para interface gráfica e Bash para lógica de programação e backend. Nessa versão protótipa o programa apenas baixa a imagem ISO dos repositórios oficiais das distribuições Linux, sem fazer qualquer alteração em seu conteúdo. Em breve estarei começando a desenvolver a versão "definitiva" do software, que será feita em Flutter para interface gráfica e Rust para lógica de programação e backend.
 
-Esse projeto tem como objetivo desenvolver um software que o usuário poderá baixar e instalar em seu computador para criar um arquivo ISO do seu próprio sistema, com todas ou quase todas as suas configurações dentro dele, como wallpaper, softwares, entre outros. Este programa foi feito para ser utilizado como uma forma de prevenção, caso o computador do usuário dê algum problema e ele perca todos os seus arquivos, ele sempre terá uma cópia do mesmo ao seu lado, seja num pendrive, HD/SSD externo ou até mesmo na nuvem, caso o usuário deseje.
+Esse projeto tem como objetivo desenvolver um software, onde o usuário poderá criar um arquivo ISO do seu próprio sistema, com todas ou quase todas as suas configurações dentro dele, como wallpaper, softwares, entre outros. Este programa foi feito para ser utilizado como uma forma de segurança, em que, caso acontença algum problema no computador do usuário, ele sempre terá uma cópia do mesmo ao seu lado, seja num pendrive, HD/SSD externo ou até mesmo na nuvem.
 
 
 ##Funcionalidades
